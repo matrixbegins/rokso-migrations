@@ -5,6 +5,7 @@ class ConfigManager():
 
     def __init__(self):
         print("....")
+        self.config = {}
         pass
 
     def __init__(self, filename) :

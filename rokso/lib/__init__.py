@@ -1,2 +1,5 @@
 from .configManager import ConfigManager
-__all__ = ["ConfigManager", "DBManager"]
+from .dbManager import DBManager
+from .migrationManager import MigrationManager
+__all__ = ["ConfigManager", "DBManager", MigrationManager]
+
