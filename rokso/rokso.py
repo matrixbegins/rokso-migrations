@@ -1,4 +1,4 @@
-import click
+import click, sys
 
 
 @click.group()
@@ -6,22 +6,20 @@ def cli():
     pass
 
 @click.command('init', short_help='🚀 init your migration project. configures db connection parameters')
-@click.option('--dbhost', prompt='Enter database hostname: ',
+@click.option('--projectpath', prompt='Enter path to setup project',
+    required=True, envvar='MIG_DB_PROJECT_PATH', help="The path where the project will be setup. rokso can create this directory if not exists.")
+@click.option('--dbhost', prompt='Enter database hostname ',
     required=True, envvar='MIG_DB_HOST',
     help="Database host where rokso will connect to.")
-@click.option('--dbname', prompt='Enter database name: ',
+@click.option('--dbname', prompt='Enter database name ',
     required=True, envvar='MIG_DB_NAME',
     help="Database name where rokso will apply migrations.")
-@click.option('--dbusername', prompt='Enter database username: ',
+@click.option('--dbusername', prompt='Enter database username ',
     required=True, envvar='MIG_DB_USER', help="Database username for connecting database.")
-@click.option('--dbpassword', prompt='Enter database password:',
+@click.option('--dbpassword', prompt='Enter database password',
     required=True, hide_input=True, envvar='MIG_DB_PASSWORD',
     help="Database password for connecting database.")
-@click.option('--configpath', prompt='Enter config directory:',
-    required=True, envvar='MIG_DB_CONFIG_PATH', help="rokso will store environment config here. rokso can create this directory if not exists.")
-@click.option('--migrationspath', prompt='Enter path where your migration scripts will live: ',
-    required=True, envvar='MIG_DB_MIGRATIONS_PATH', help="Your migration files will be created and maintained in this directory. rokso can create this directory if not exists.")
-def init(dbhost, dbname, dbusername, dbpassword, configpath, migrationspath):
+def init(dbhost, dbname, dbusername, dbpassword, projectpath):
     """This commands configures basic environment variables that are needed to cary out database migrations.
     Make sure the given user has ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, DELETE, DROP, EXECUTE,
     INDEX, INSERT, SELECT, SHOW DATABASES, UPDATE privileges.
@@ -32,7 +30,7 @@ def init(dbhost, dbname, dbusername, dbpassword, configpath, migrationspath):
 @click.command('status', short_help='✅ checks the current state of database and pending migrations')
 def status():
     """ checks the current state of database and pending migrations. It's good to run this before running migrate command. """
-    click.echo('checking database status')
+    click.echo('checking database status' + __file__)
 
 @click.command('remap', short_help='🔄 Reverse engineer your DB migrations from existing database.')
 def remap():
