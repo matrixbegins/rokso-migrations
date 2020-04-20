@@ -1,5 +1,7 @@
 import click, sys
 
+import lib.agent
+
 
 @click.group()
 def cli():
@@ -24,8 +26,7 @@ def init(dbhost, dbname, dbusername, dbpassword, projectpath):
     Make sure the given user has ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, DELETE, DROP, EXECUTE,
     INDEX, INSERT, SELECT, SHOW DATABASES, UPDATE privileges.
     """
-    click.echo('checking existing config')
-    click.echo('Creating new config...')
+    lib.agent.init_setup(dbhost, dbname, dbusername, dbpassword, projectpath)
 
 @click.command('status', short_help='✅ checks the current state of database and pending migrations')
 def status():
