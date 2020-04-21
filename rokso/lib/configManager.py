@@ -1,30 +1,48 @@
-import json, sys
+import json, sys, os
 
 
 class ConfigManager():
 
-    def __init__(self):
-        print("....")
-        self.config = {}
-        pass
+    initial_dirs = ["migration"]
 
-    def __init__(self, filename) :
-        """ Read config.json from project root if not found then throw an error """
-        print("....", filename )
-        self.config = {}
-        try:
-            with open('filename', 'r') as f:
-                self.config = json.load(f)
-        except:
-            print("there is no config file in project root. Please run rokso init command.")
+    def create_inital_dirs(self, working_dir):
+        print("[#] Generating required dir(s) if not exist")
 
+        for dir in self.initial_dirs:
+            dirname = working_dir + "/" + dir
+            if not os.path.isdir(dirname):
+                try:  
+                    os.mkdir(dirname)  
+                except Exception as e:  
+                    raise e 
 
-    def create_config(self, filename):
+    def __init__(self, json_dict, cwd):        
         # create a new config file in project root
-        config_json = {}
-        with open(filename, 'w') as json_file:
-            json.dump(config_json, json_file, indent = 4, sort_keys=True)
+
+        CONFIG_FILE = cwd + "/" + "config.json"
+
+        print("[*] Checking state of config file in CWD")
+        if os.path.exists(CONFIG_FILE):
+            print("[#] Config file already exists")
+        else:
+
+            json_data = { "database": json_dict }
+            json_object = json.dumps(json_data, indent = 4, sort_keys=True) + "\n"
+
+            with open(CONFIG_FILE, "w") as config_file:
+                config_file.write(json_object)
+                print("[*] Config file has been created")
+
+            self.create_inital_dirs(cwd)
 
 
-    def get_config(self):
-        return self.config
+    def get_config(self, cwd):
+        CONFIG_FILE = cwd + "/" + "config.json"
+        self.create_inital_dirs(cwd)
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                 config = f.read()
+        except Exception as e:
+            raise e
+
+        return config
