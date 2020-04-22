@@ -4,16 +4,19 @@ import importlib.util
 from datetime import datetime
 
 migration_file_template = """apply_sql = \"""
-WRITE your DDL/DML query here
+%s
 \"""
 
-rollback_sql = "WRITE your ROLLBACK query here."
+rollback_sql = "%s"
 
 migrations = {
     "apply": apply_sql,
     "rollback": rollback_sql
 }
 """
+
+empty_migration_template = migration_file_template % ('WRITE your DDL/DML query here', 'WRITE your ROLLBACK query here.')
+
 
 class MigrationManager:
     def __init__(self, path):
@@ -55,6 +58,13 @@ class MigrationManager:
 
 
     def create_migration_file(self, table_name, file_name):
+        new_file_name = self.get_new_file_name(file_name)
+        self.create_dir_write_file(table_name, new_file_name, empty_migration_template)
+
+        print("[*] migration file {} has been generated".format(new_file_name) )
+
+
+    def create_dir_write_file(self, table_name, file_name, content):
         dir_path = self.migration_path + os.path.sep + table_name
         if not os.path.exists(dir_path):
             if not os.path.isdir(dir_path):
@@ -63,13 +73,9 @@ class MigrationManager:
                 except Exception as e:
                     raise e
 
-        new_file_name = self.get_new_file_name(file_name)
-
-        mg_file = open(dir_path + os.path.sep + new_file_name, "w+")
-        mg_file.write(migration_file_template)
+        mg_file = open(dir_path + os.path.sep + file_name, "w+")
+        mg_file.write(content)
         mg_file.close()
-
-        print("[*] migration file {} has been generated".format(new_file_name) )
 
 
     def get_new_file_name(self, file_name):
@@ -81,17 +87,25 @@ class MigrationManager:
 
     def get_all_migration_files(self):
         list1 = []
-        abc = 0
         for main_dir, subdirs, files in os.walk(self.migration_path):
             print('\n\nprocessing directory: ', main_dir)
             if "__pycache__" in main_dir:
                 continue
             for f in files:
-                abc = abc + 1
                 print('checking::', main_dir + os.path.sep + f )
 
                 list1.append(main_dir + os.path.sep + f)
 
-        print("counter == ", abc)
         return list1
+
+
+    def create_migration_file_with_sql(self, table_name:str, create_sql:str):
+        file_name = self.get_new_file_name('create_table_' + table_name )
+
+        drop_sql = "DROP TABLE IF EXISTS {} ;".format(table_name)
+        content = migration_file_template % (create_sql, drop_sql)
+        self.create_dir_write_file(table_name, file_name, content)
+
+        print("file {}{}{} has been created.".format(table_name, os.path.sep, file_name))
+        return table_name + os.path.sep + file_name
 

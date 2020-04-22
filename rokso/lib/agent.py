@@ -1,9 +1,8 @@
-import sys, click
+import sys, click, json, os, uuid
 from .configManager import ConfigManager
 from .dbManager import DBManager
 from .migrationManager import MigrationManager
-import json
-import os
+from tabulate import tabulate
 
 
 json_dict = {}
@@ -17,7 +16,7 @@ def custom_exit(CODE, ex, message = " "):
     exit(CODE)
 
 def get_cwd():
-    print("cwd:: ", os.getcwd())
+    print("working directory:: ", os.getcwd())
     return os.getcwd()
 
 def init_setup(dbhost, dbname, dbusername, dbpassword, projectpath):
@@ -26,7 +25,6 @@ def init_setup(dbhost, dbname, dbusername, dbpassword, projectpath):
         then it'll check/create the revision table in database
     """
     cwd = get_cwd()
-
     json_dict = { "host": dbhost, "database": dbname, "user": dbusername, "password": dbpassword }
 
     try:
@@ -37,7 +35,9 @@ def init_setup(dbhost, dbname, dbusername, dbpassword, projectpath):
         custom_exit(1, e, "Issues while creating migration directory.")
 
     config = CMobj.get_config(cwd)
-    # print(config)
+
+    db = DBManager(config.get("database"))
+    db.create_version_table()
 
 
 def db_status():
@@ -47,7 +47,10 @@ def db_status():
     """
 
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
-    return db.get_database_state()
+    cols , data = db.get_database_state()
+
+    print(tabulate(data, headers=cols))
+    # return db.get_database_state()
 
 
 def create_db_migration(tablename, filename):
@@ -62,21 +65,35 @@ def rollback_db_migration(version):
 
 def reverse_enginner_db():
     """
-        1. finds all the tabels in database
+        1. finds all the tables in database
         2. extract the table definition for each table from DB
         3. create the migration files under "migrations" dir located in project root.
+        4. make an entry in version table for that migration
+        5. @TODO:: get an optional argument of list of table for which the data should also be dumped.
+        6. @TODO:: create logic for stored procedures, functions and triggers.
     """
-    print("starting rev eng:: ")
-
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
 
-    # mg.import_migration_files()
+    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+    cols , data = db.get_database_state()
 
-    # mg.import_single_migration( 'table2', 'create_table2.py')
+    if len(data) > 0:
+        custom_exit(1, "It seems you already have some rokso migrations in your database. Reverse engineering is possible just after the project setup.")
+    else:
+        print("Starting reverse engineering")
+        version_no = str(uuid.uuid4())[:8]
+        headers, data = db.select_query("show tables;")
+        print("I found {} tables in the database... ".format(len(data)))
+        print(tabulate(data, headers=headers))
 
-    print(mg.get_all_migration_files())
+        for table in data:
+            print('creating migration for table: ', table[0])
+            if table[0] != db.revision_table:
+                header, definition = db.get_table_definition(table[0])
+                print(definition[0][0])
+                # print(definition[0][1])
+                migration_file_name = mg.create_migration_file_with_sql(table[0], definition[0][1])
+                # now insert into the migration_version table
+                db.insert_new_migration(migration_file_name, version_no, "complete" )
 
-    # if not db_status():
-    #     print("ERROR::!")
-    # else:
-    #     pass
+        print("Reverse enginnering of database complete. \n your database is at revision # {}".format(version_no))
