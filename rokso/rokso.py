@@ -1,6 +1,6 @@
 import click, sys
 
-import lib.agent
+from lib import agent
 
 
 @click.group()
@@ -26,25 +26,32 @@ def init(dbhost, dbname, dbusername, dbpassword, projectpath):
     Make sure the given user has ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, DELETE, DROP, EXECUTE,
     INDEX, INSERT, SELECT, SHOW DATABASES, UPDATE privileges.
     """
-    lib.agent.init_setup(dbhost, dbname, dbusername, dbpassword, projectpath)
+    agent.init_setup(dbhost, dbname, dbusername, dbpassword, projectpath)
+
 
 @click.command('status', short_help='✅ checks the current state of database and pending migrations')
 def status():
     """ checks the current state of database and pending migrations. It's good to run this before running migrate command. """
-    click.echo('checking database status' + __file__)
+    # click.echo('checking database status' + __file__)
+    agent.db_status()
+
 
 @click.command('remap', short_help='🔄 Reverse engineer your DB migrations from existing database.')
 def remap():
     """ Reverse engineer your DB migrations from existing database.
      Make sure init command is complete and you have a valid config file and migrations directory setup. """
     click.echo('Starting remapping of existing database for versioning')
+    agent.reverse_enginner_db()
+
 
 @click.command('create', short_help='➕ create a database migration.')
 @click.option('--tablename', help="The table/entity name for which you want to create the migration.")
 @click.option('--filename', help="Name of the migration file.")
 def create(tablename, filename):
     """ Creates a migration template file for specified table/entity name. """
-    click.echo('creating a migration for .....')
+    click.echo('creating a migration ...........')
+    agent.create_db_migration(tablename, filename)
+
 
 @click.command('migrate', short_help='⤴️  Apply all outstanding migrations to database.')
 @click.option('--migration', help="Specific migration that needs to be carried out.")
@@ -52,6 +59,7 @@ def migrate(migration):
     """ Apply all outstanding migrations to database.
     By specifing --migration option you can apply just one single migration. """
     click.echo('Applying following migrations to database....' + migration)
+
 
 @click.command('rollback', short_help='⤵️  Rollback last applied migration')
 @click.option('--version', help="Rollbacks database state to specified version. ")

@@ -17,7 +17,8 @@ def custom_exit(CODE, ex, message = " "):
     exit(CODE)
 
 def get_cwd():
-    return os.getcwd()    
+    print("cwd:: ", os.getcwd())
+    return os.getcwd()
 
 def init_setup(dbhost, dbname, dbusername, dbpassword, projectpath):
     """
@@ -25,18 +26,18 @@ def init_setup(dbhost, dbname, dbusername, dbpassword, projectpath):
         then it'll check/create the revision table in database
     """
     cwd = get_cwd()
-    
-    json_dict = { "host": dbhost, "databse": dbname, "user": dbusername, "password": dbpassword }
-    
-    try:
-        CMobj = ConfigManager(json_dict, cwd)
-    except Exception as e:
-        custom_exit(1, e, "Issues while creating inital dirs")
 
-    try:    
-        config = CMobj.get_config(cwd)
+    json_dict = { "host": dbhost, "database": dbname, "user": dbusername, "password": dbpassword }
+
+    try:
+        CMobj = ConfigManager()
+        CMobj.init(json_dict, projectpath)
     except Exception as e:
-        custom_exit(1, "unable to read configuraion")    
+        print(e)
+        custom_exit(1, e, "Issues while creating migration directory.")
+
+    config = CMobj.get_config(cwd)
+    # print(config)
 
 
 def db_status():
@@ -44,11 +45,15 @@ def db_status():
     Checks all the migrations processed so far from database
     then checks all pending migrations.
     """
-    pass
+
+    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+    return db.get_database_state()
 
 
 def create_db_migration(tablename, filename):
-    pass
+    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+
+    mg.create_migration_file(tablename, filename)
 
 
 def rollback_db_migration(version):
@@ -61,6 +66,17 @@ def reverse_enginner_db():
         2. extract the table definition for each table from DB
         3. create the migration files under "migrations" dir located in project root.
     """
-    pass
+    print("starting rev eng:: ")
 
+    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
 
+    # mg.import_migration_files()
+
+    # mg.import_single_migration( 'table2', 'create_table2.py')
+
+    print(mg.get_all_migration_files())
+
+    # if not db_status():
+    #     print("ERROR::!")
+    # else:
+    #     pass

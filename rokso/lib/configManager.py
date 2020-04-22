@@ -5,27 +5,32 @@ class ConfigManager():
 
     initial_dirs = ["migration"]
 
-    def create_inital_dirs(self, working_dir):
+    def __init__(self):
+        self.config = {}
+
+
+    def create_initial_dirs(self, working_dir:str):
         print("[#] Generating required dir(s) if not exist")
 
         for dir in self.initial_dirs:
-            dirname = working_dir + "/" + dir
+            dirname = working_dir + os.path.sep + dir
+            # print('creating:: ', dirname)
             if not os.path.isdir(dirname):
-                try:  
-                    os.mkdir(dirname)  
-                except Exception as e:  
-                    raise e 
+                try:
+                    os.mkdir(dirname)
+                except Exception as e:
+                    raise e
 
-    def __init__(self, json_dict, cwd):        
+
+    def init(self, json_dict:dict, cwd:str):
         # create a new config file in project root
 
-        CONFIG_FILE = cwd + "/" + "config.json"
+        CONFIG_FILE = cwd + os.path.sep + "config.json"
 
         print("[*] Checking state of config file in CWD")
         if os.path.exists(CONFIG_FILE):
-            print("[#] Config file already exists")
+            raise Exception("Config file already exists")
         else:
-
             json_data = { "database": json_dict }
             json_object = json.dumps(json_data, indent = 4, sort_keys=True) + "\n"
 
@@ -33,16 +38,14 @@ class ConfigManager():
                 config_file.write(json_object)
                 print("[*] Config file has been created")
 
-            self.create_inital_dirs(cwd)
+            self.create_initial_dirs(cwd)
 
 
-    def get_config(self, cwd):
-        CONFIG_FILE = cwd + "/" + "config.json"
-        self.create_inital_dirs(cwd)
-        try:
+    def get_config(self, cwd:str):
+        CONFIG_FILE = cwd + os.path.sep + "config.json"
+        # print('reading config file::', CONFIG_FILE)
+        if not bool(self.config):
             with open(CONFIG_FILE, 'r') as f:
-                 config = f.read()
-        except Exception as e:
-            raise e
+                self.config = json.loads(f.read())
 
-        return config
+        return self.config
