@@ -58,7 +58,9 @@ def create(tablename, filename):
 def migrate(migration):
     """ Apply all outstanding migrations to database.
     By specifing --migration option you can apply just one single migration. """
-    click.echo('Applying following migrations to database....' + migration)
+    # click.echo('Applying following migrations to database....' + migration)
+    agent.apply_migration(migration)
+
 
 
 @click.command('rollback', short_help='⤵️  Rollback last applied migration')

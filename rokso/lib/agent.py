@@ -44,19 +44,56 @@ def db_status():
     """
     Checks all the migrations processed so far from database
     then checks all pending migrations.
+    1. @TODO:: if referring filenames from database entries
+        devise a way for OS's directory seperator to access files without a problem.
     """
 
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
     cols , data = db.get_database_state()
 
-    print(tabulate(data, headers=cols))
-    # return db.get_database_state()
+    print("Last few successful migrations: ")
+    print(tabulate(data[-10:], headers=cols))
+    # now check the pending pigrations
+    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+    pending_migrations = mg.get_pending_migrations(data)
+    toshow = []
+    for pending in pending_migrations:
+        toshow.append((pending, 'NA', 'pending'))
+
+    print("\nPending migrations for application: ")
+    print(tabulate(toshow, headers=('filename', 'version', 'status')))
 
 
 def create_db_migration(tablename, filename):
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
 
     mg.create_migration_file(tablename, filename)
+
+
+def apply_migration(migration_file_name):
+    """
+        Checks if any previous migration is in
+    """
+    version_no = str(uuid.uuid4())[:8]
+
+    if migration_file_name:
+        # process single migration
+        mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+        sql = mg.import_single_migration(migration_file_name)
+        # print(sql)
+
+        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+        try:
+            db.apply_migration(sql.get('apply'), migration_file_name, version_no)
+        except Exception as ex:
+            pass
+        finally:
+            print("Your database is at revision# {}".format(version_no) )
+
+
+    else:
+        # process all the pending migration
+        pass
 
 
 def rollback_db_migration(version):
@@ -71,6 +108,7 @@ def reverse_enginner_db():
         4. make an entry in version table for that migration
         5. @TODO:: get an optional argument of list of table for which the data should also be dumped.
         6. @TODO:: create logic for stored procedures, functions and triggers.
+
     """
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
 
@@ -96,4 +134,4 @@ def reverse_enginner_db():
                 # now insert into the migration_version table
                 db.insert_new_migration(migration_file_name, version_no, "complete" )
 
-        print("Reverse enginnering of database complete. \n your database is at revision # {}".format(version_no))
+        print("Reverse enginnering of database complete. \n your database is at revision# {}".format(version_no))

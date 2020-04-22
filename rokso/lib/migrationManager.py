@@ -46,15 +46,19 @@ class MigrationManager:
                 print(module.migrations)
 
 
-    def import_single_migration(self, table_name:str, file_name:str):
-        full_path = self.migration_path + os.path.sep + table_name + os.path.sep + file_name
+    def import_single_migration(self, file_name:str):
+        """ Imports your migration python file as module for processing.
+            The file_name path must be in tableName/fileName.py format
+        """
+        full_path = self.migration_path + os.path.sep + os.path.sep + file_name
         if os.path.exists(full_path):
             modulename = file_name.strip('.py')
-            module = self.module_from_file(table_name + '_' + modulename , full_path)
-            print(module.migrations)
+            module = self.module_from_file( modulename.replace(os.path.sep, '_') , full_path)
+            # print(module.migrations)
             return module.migrations
         else:
-            return None
+            raise Exception("{} does not exists.\n Please make sure the name of the migration file is correct and it must be in <tableName>/<fileName>.py format."
+                    .format(self.migration_path + os.path.sep + os.path.sep + file_name))
 
 
     def create_migration_file(self, table_name, file_name):
@@ -88,11 +92,11 @@ class MigrationManager:
     def get_all_migration_files(self):
         list1 = []
         for main_dir, subdirs, files in os.walk(self.migration_path):
-            print('\n\nprocessing directory: ', main_dir)
+            # print('\n\nprocessing directory: ', main_dir)
             if "__pycache__" in main_dir:
                 continue
             for f in files:
-                print('checking::', main_dir + os.path.sep + f )
+                # print('checking::', main_dir + os.path.sep + f )
 
                 list1.append(main_dir + os.path.sep + f)
 
@@ -109,3 +113,13 @@ class MigrationManager:
         print("file {}{}{} has been created.".format(table_name, os.path.sep, file_name))
         return table_name + os.path.sep + file_name
 
+    def get_pending_migrations(self, db_results):
+        # print(db_results)
+        processed_files = [f[1] for f in db_results ]
+        # print(processed_files)
+        all_files = self.get_all_migration_files()
+        # print(all_files)
+        base_path_removed = [f.replace(self.migration_path + os.path.sep, '') for f in all_files]
+        # print("base files names:: ", base_path_removed)
+
+        return sorted(list(set(base_path_removed) - set(processed_files)) )

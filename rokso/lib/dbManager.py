@@ -79,6 +79,7 @@ class DBManager:
             pass
         except Error as e:
             self.insert_new_migration(filename, version, 'error')
+            raise e
 
 
     def insert_new_migration(self, filename, version, status='pending' ):
@@ -86,13 +87,14 @@ class DBManager:
                 INSERT INTO {}
                 (filename, version, status, scheduledAt, executedAt)
                 VALUES('{}', '{}', '{}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                ON DUPLICATE KEY UPDATE status = '{}', executedAt=CURRENT_TIMESTAMP;
+                ON DUPLICATE KEY UPDATE status = '{}', version = '{}', executedAt=CURRENT_TIMESTAMP;
             """
-        self.execute_query(sql.format(self.revision_table, filename, version, status, status))
+        self.execute_query(sql.format(self.revision_table, filename, version, status, status, version))
 
 
     def rollback_migration(self, sql):
         self.execute_query(sql)
+
 
     def get_table_definition(self, tablename):
         return self.select_query("SHOW CREATE TABLE {}".format(tablename))
