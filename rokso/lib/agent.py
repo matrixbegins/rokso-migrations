@@ -12,7 +12,7 @@ def custom_exit(CODE, ex, message = " "):
 
     print("[#] Oooo... snap     \_(-_-)_/ ")
     print(ex)
-    print(message)
+    print( "✅", message)
     exit(CODE)
 
 def get_cwd():
@@ -88,7 +88,7 @@ def apply_migration(migration_file_name):
         except Exception as ex:
             pass
         finally:
-            print("Your database is at revision# {}".format(version_no) )
+            print("✅ Your database is at revision# {}".format(version_no) )
 
     else:
         # process all the pending migration
@@ -135,4 +135,4 @@ def reverse_enginner_db():
                 # now insert into the migration_version table
                 db.insert_new_migration(migration_file_name, version_no, "complete" )
 
-        print("Reverse enginnering of database complete. \n your database is at revision# {}".format(version_no))
+        print("✅ Reverse enginnering of database complete. \n your database is at revision# {}".format(version_no))

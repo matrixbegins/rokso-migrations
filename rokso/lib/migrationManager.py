@@ -57,7 +57,7 @@ class MigrationManager:
             # print(module.migrations)
             return module.migrations
         else:
-            raise Exception("{} does not exists.\n Please make sure the name of the migration file is correct and it must be in <tableName>/<fileName>.py format."
+            raise Exception("✅ {} does not exists.\n Please make sure the name of the migration file is correct and it must be in <tableName>/<fileName>.py format."
                     .format(self.migration_path + os.path.sep + os.path.sep + file_name))
 
 
