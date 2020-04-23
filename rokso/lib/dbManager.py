@@ -72,7 +72,7 @@ class DBManager:
         return self.select_query("SELECT * FROM {}".format(self.revision_table))
 
     def apply_migration(self, sql, filename, version ):
-        # @TODO:: check previous state of database if there is an existing migrations in error state then do not proceed.
+
         try:
             self.execute_query(sql)
             self.insert_new_migration(filename, version, 'complete')

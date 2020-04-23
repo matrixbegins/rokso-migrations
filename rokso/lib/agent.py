@@ -75,14 +75,14 @@ def apply_migration(migration_file_name):
         Checks if any previous migration is in
     """
     version_no = str(uuid.uuid4())[:8]
-
+    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
     if migration_file_name:
         # process single migration
-        mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
         sql = mg.import_single_migration(migration_file_name)
         # print(sql)
+        # @TODO:: check previous state of database if there is an existing migrations in error state then do not proceed.
 
-        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
         try:
             db.apply_migration(sql.get('apply'), migration_file_name, version_no)
         except Exception as ex:
@@ -90,9 +90,10 @@ def apply_migration(migration_file_name):
         finally:
             print("Your database is at revision# {}".format(version_no) )
 
-
     else:
         # process all the pending migration
+        # find all pending migrations
+        # loop through all files -> get apply SQL using MigrationManager -> run apply SQL with DBManager
         pass
 
 
