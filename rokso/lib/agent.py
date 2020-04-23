@@ -53,7 +53,11 @@ def db_status():
 
     print("Last few successful migrations: ")
     print(tabulate(data[-10:], headers=cols))
-    # now check the pending pigrations
+    # now check the pending migrations
+
+    #
+    #
+
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
     pending_migrations = mg.get_pending_migrations(data)
     toshow = []
@@ -76,6 +80,7 @@ def apply_migration(migration_file_name):
     """
     version_no = str(uuid.uuid4())[:8]
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+    col, data = db.get_database_state()
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
     if migration_file_name:
         # process single migration
@@ -91,10 +96,19 @@ def apply_migration(migration_file_name):
             print("✅ Your database is at revision# {}".format(version_no) )
 
     else:
-        # process all the pending migration
-        # find all pending migrations
-        # loop through all files -> get apply SQL using MigrationManager -> run apply SQL with DBManager
-        pass
+        pending_migrations = mg.get_pending_migrations(data)
+
+        for p_mig in pending_migrations:         
+           
+            sql = mg.import_single_migration(p_mig)
+
+            try:
+                 db.apply_migration(sql.get('apply'), p_mig, version_no)
+            except Exception as ex:
+                 pass
+            finally:
+                 print("Your database is at revision# {}".format(version_no) )
+
 
 
 def rollback_db_migration(version):

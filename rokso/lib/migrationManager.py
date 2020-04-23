@@ -114,12 +114,18 @@ class MigrationManager:
         return table_name + os.path.sep + file_name
 
     def get_pending_migrations(self, db_results):
-        # print(db_results)
-        processed_files = [f[1] for f in db_results ]
-        # print(processed_files)
+        #print(db_results)
+        #processed_files = [f[1] for f in db_results ]
+        processed_files = []
+        for file in db_results:
+            if file[3] == "complete":
+                processed_files.append(file[1])    
+
+        #print(processed_files)
         all_files = self.get_all_migration_files()
-        # print(all_files)
+        #print(all_files)
         base_path_removed = [f.replace(self.migration_path + os.path.sep, '') for f in all_files]
-        # print("base files names:: ", base_path_removed)
+        #print("base files names:: ", base_path_removed)
 
         return sorted(list(set(base_path_removed) - set(processed_files)) )
+
