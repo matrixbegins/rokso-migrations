@@ -53,13 +53,19 @@ def db_status():
 
     print("Last few successful migrations: ")
     print(tabulate(data[-10:], headers=cols))
-    # now check the pending migrations
-
-    #
-    #
+    
+    error_files = []
+    for file in data:
+        if file[3] == "error":
+            error_files.append(file[1])
+            print(" ")
+            print("[*] Below files are in failed state, Kindly fix those first")
+            print("[.] {}".format(*error_files), sep = "\n")
+            custom_exit(1, " ")
 
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
     pending_migrations = mg.get_pending_migrations(data)
+    print(pending_migrations)
     toshow = []
     for pending in pending_migrations:
         toshow.append((pending, 'NA', 'pending'))
