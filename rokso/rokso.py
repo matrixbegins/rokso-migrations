@@ -45,8 +45,10 @@ def remap():
 
 
 @click.command('create', short_help='➕ create a database migration.')
-@click.option('--tablename', help="The table/entity name for which you want to create the migration.")
-@click.option('--filename', help="Name of the migration file.")
+@click.option('--tablename', required=True, prompt='Enter table/procedure/function name that you want to create this migration for.',
+            help="The table/procedure/function name for which you want to create the migration.")
+@click.option('--filename', required=True, prompt='Enter a file name for this migration.',
+            help="Name of the migration file.")
 def create(tablename, filename):
     """ Creates a migration template file for specified table/entity name. """
     click.echo('creating a migration ...........')
@@ -71,9 +73,6 @@ def rollback(version):
     click.echo('Rolling back migration to revision # 123')
 
 
-@click.command()
-def unstage():
-    click.echo('Too soon to open curtains! check back later')
 
 cli.add_command(init)
 cli.add_command(status)

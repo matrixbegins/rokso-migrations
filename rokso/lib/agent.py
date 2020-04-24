@@ -8,11 +8,14 @@ from tabulate import tabulate
 json_dict = {}
 initial_dirs = ["migration"]
 
-def custom_exit(CODE, ex, message = " "):
+def custom_exit(CODE, message="", ex=""):
 
-    print("[#] Oooo... snap     \_(-_-)_/ ")
-    print(ex)
-    print( "✅", message)
+    print("\n❌ Oooo... snap     \_(-_-)_/  \n"  )
+    if ex!="":
+        print(ex)
+    if message!="":
+        print( message, "\n")
+
     exit(CODE)
 
 def get_cwd():
@@ -32,7 +35,7 @@ def init_setup(dbhost, dbname, dbusername, dbpassword, projectpath):
         CMobj.init(json_dict, projectpath)
     except Exception as e:
         print(e)
-        custom_exit(1, e, "Issues while creating migration directory.")
+        custom_exit(1, "Issues while creating migration directory.", e)
 
     config = CMobj.get_config(cwd)
 
@@ -51,21 +54,23 @@ def db_status():
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
     cols , data = db.get_database_state()
 
+    # get all successful migrations
+    completed_migs = list(filter(lambda el: el[3] == "complete", data))
+
+    # get any previous failed migrations
+    failed_migs = list(filter(lambda el: el[3] == "error", data))
+
     print("Last few successful migrations: ")
-    print(tabulate(data[-10:], headers=cols))
-    
-    error_files = []
-    for file in data:
-        if file[3] == "error":
-            error_files.append(file[1])
-            print(" ")
-            print("[*] Below files are in failed state, Kindly fix those first")
-            print("[.] {}".format(*error_files), sep = "\n")
-            custom_exit(1, " ")
+    print(tabulate(completed_migs[-10:], headers=cols))
+
+    if len(failed_migs) > 0:
+        print("\n[❗] However we have detected few failed migrations in the past. \n Please fix them first.\n")
+        print(tabulate(failed_migs, headers=cols))
+        custom_exit(1)
 
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
     pending_migrations = mg.get_pending_migrations(data)
-    print(pending_migrations)
+
     toshow = []
     for pending in pending_migrations:
         toshow.append((pending, 'NA', 'pending'))
@@ -83,18 +88,35 @@ def create_db_migration(tablename, filename):
 def apply_migration(migration_file_name):
     """
         Checks if any previous migration is in
+        @TODO:: check lockings for ALTER statements
+        @TODO:: check for all/none or dependencies multi-table entries
     """
     version_no = str(uuid.uuid4())[:8]
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
     col, data = db.get_database_state()
+
+    # get any previous failed migrations
+    failed_migs = list(filter(lambda el: el[3] == "error", data))
+
+    failed_files = [f[1] for f in failed_migs]
+
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
     if migration_file_name:
+        # if migration file is not in among the previously failed migrations then do not proceed.
+        if len(failed_migs) > 0 and migration_file_name != failed_files[0]:
+            print("""\n[❗] We have detected some failed migrations which still need to be fixed.
+The given migration file name is not same or belongs to the list of below failed migration.
+Please fix below files and follow the following order to apply migration. """)
+            print(tabulate(failed_migs, headers=col))
+            custom_exit(1)
+
         # process single migration
         sql = mg.import_single_migration(migration_file_name)
         # print(sql)
         # @TODO:: check previous state of database if there is an existing migrations in error state then do not proceed.
 
         try:
+            print("🌀Applying migration file: ", migration_file_name)
             db.apply_migration(sql.get('apply'), migration_file_name, version_no)
         except Exception as ex:
             pass
@@ -102,18 +124,26 @@ def apply_migration(migration_file_name):
             print("✅ Your database is at revision# {}".format(version_no) )
 
     else:
-        pending_migrations = mg.get_pending_migrations(data)
+        # checking for failed migration. If present then attempt to migrate them first and do not proceed with new migrations.
+        if len(failed_migs) > 0:
+            print("""\n[❗] We have detected some failed migrations. Attempting to run following first.\n Once these are successful run `rokso migrate` again to apply new migrations.""")
+            print(tabulate(failed_migs, headers=col))
+            pending_migrations = failed_files
+        else:
+            pending_migrations = mg.get_pending_migrations(data)
 
-        for p_mig in pending_migrations:         
-           
+        for p_mig in pending_migrations:
+
             sql = mg.import_single_migration(p_mig)
 
             try:
-                 db.apply_migration(sql.get('apply'), p_mig, version_no)
+                print("🌀Applying migration file: ", p_mig)
+                db.apply_migration(sql.get('apply'), p_mig, version_no)
             except Exception as ex:
-                 pass
-            finally:
-                 print("Your database is at revision# {}".format(version_no) )
+                print("✅ Your database is at revision# {}".format(version_no) )
+                custom_exit(1, "Your migration '{}' has failed. Please fix it and retry.".format(p_mig), ex)
+
+        print("✅ Your database is at revision# {}".format(version_no) )
 
 
 
