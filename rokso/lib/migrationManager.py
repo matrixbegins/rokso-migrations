@@ -96,8 +96,6 @@ class MigrationManager:
             if "__pycache__" in main_dir:
                 continue
             for f in files:
-                # print('checking::', main_dir + os.path.sep + f )
-
                 list1.append(main_dir + os.path.sep + f)
 
         return list1
@@ -113,19 +111,19 @@ class MigrationManager:
         print("file {}{}{} has been created.".format(table_name, os.path.sep, file_name))
         return table_name + os.path.sep + file_name
 
+
     def get_pending_migrations(self, db_results):
-        #print(db_results)
-        #processed_files = [f[1] for f in db_results ]
+        """
+            Accepts a resultset of migration table to compare with all migration files on file system and resultset.
+        """
         processed_files = []
         for file in db_results:
             if file[3] == "complete":
-                processed_files.append(file[1])    
+                processed_files.append(file[1])
 
         #print(processed_files)
         all_files = self.get_all_migration_files()
-        #print(all_files)
         base_path_removed = [f.replace(self.migration_path + os.path.sep, '') for f in all_files]
         #print("base files names:: ", base_path_removed)
 
         return sorted(list(set(base_path_removed) - set(processed_files)) )
-

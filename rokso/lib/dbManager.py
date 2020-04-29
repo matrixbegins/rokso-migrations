@@ -10,6 +10,7 @@ class DBManager:
         self.revision_table = config.get("version_table_name", default_version_table_name)
         self.config = {k: config[k] for k in ('host', 'database', 'user', 'password')}
 
+
     def execute_query(self, sql):
         connection = ConnectionManager(self.config).get_connection()
         try:
@@ -29,6 +30,7 @@ class DBManager:
             if (connection.is_connected()):
                 cursor.close()
                 connection.close()
+
 
     def select_query(self, sql):
         connection = ConnectionManager(self.config).get_connection()
@@ -68,15 +70,16 @@ class DBManager:
         self.execute_query(sql.format(self.revision_table))
         pass
 
+
     def get_database_state(self):
         return self.select_query("SELECT * FROM {}".format(self.revision_table))
+
 
     def apply_migration(self, sql, filename, version ):
 
         try:
             self.execute_query(sql)
             self.insert_new_migration(filename, version, 'complete')
-            pass
         except Error as e:
             self.insert_new_migration(filename, version, 'error')
             raise e
@@ -92,9 +95,29 @@ class DBManager:
         self.execute_query(sql.format(self.revision_table, filename, version, status, status, version))
 
 
-    def rollback_migration(self, sql):
-        self.execute_query(sql)
+    def rollback_migration(self, sql, id):
+        try:
+            self.execute_query(sql)
+            self.remove_migration(id)
+        except Error as e:
+            raise e
+
+
+    def remove_migration(self, id):
+        sql = "DELETE FROM {} WHERE id = {} ;"
+        return self.execute_query(sql.format(self.revision_table, id))
 
 
     def get_table_definition(self, tablename):
         return self.select_query("SHOW CREATE TABLE {}".format(tablename))
+
+
+    def get_latest_db_revision(self):
+        """ returns """
+        sql = "SELECT * from {} ORDER BY id DESC LIMIT 1;"
+        return self.select_query(sql.format(self.revision_table))
+
+
+    def get_migrations_at_revision(self, version):
+        sql = """ SELECT * FROM {} WHERE scheduledAt > (SELECT scheduledAt FROM {} WHERE version = '{}' ORDER  BY id desc LIMIT 1) ORDER BY id DESC; """
+        return self.select_query(sql.format(self.revision_table,self.revision_table, version))

@@ -56,7 +56,7 @@ def create(tablename, filename):
 
 
 @click.command('migrate', short_help='⤴️  Apply all outstanding migrations to database.')
-@click.option('--migration', help="Specific migration that needs to be carried out.")
+@click.option('--migration', help="Specific migration that needs to be carried out.\nThis option must be of format <tableName>/<fileName> and your file must be under the same path inside migration directory")
 def migrate(migration):
     """ Apply all outstanding migrations to database.
     By specifing --migration option you can apply just one single migration. """
@@ -64,14 +64,13 @@ def migrate(migration):
     agent.apply_migration(migration)
 
 
-
 @click.command('rollback', short_help='⤵️  Rollback last applied migration')
-@click.option('--version', help="Rollbacks database state to specified version. ")
+@click.option('--version', prompt='Please enter a version number to rollback to (Any previous stable version).\nIf you are not sure then run `rokso status` first to know about version',
+                help="Rollbacks database state to specified version.\nThese version numbers can be obtained either from database or by running `rokso status`")
 def rollback(version):
     """ Rollback last applied out migration
-        By specifing --version option you can rollback to an previous DB state. """
-    click.echo('Rolling back migration to revision # 123')
-
+        By specifing --version option you can rollback to a previous DB state. """
+    agent.rollback_db_migration(version)
 
 
 cli.add_command(init)
@@ -80,8 +79,6 @@ cli.add_command(remap)
 cli.add_command(create)
 cli.add_command(migrate)
 cli.add_command(rollback)
-
-# 🛑    ⛔  🚫  ❌
 
 
 if __name__ == '__main__':

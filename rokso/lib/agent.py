@@ -18,9 +18,11 @@ def custom_exit(CODE, message="", ex=""):
 
     exit(CODE)
 
+
 def get_cwd():
     print("working directory:: ", os.getcwd())
     return os.getcwd()
+
 
 def init_setup(dbhost, dbname, dbusername, dbpassword, projectpath):
     """
@@ -112,8 +114,6 @@ Please fix below files and follow the following order to apply migration. """)
 
         # process single migration
         sql = mg.import_single_migration(migration_file_name)
-        # print(sql)
-        # @TODO:: check previous state of database if there is an existing migrations in error state then do not proceed.
 
         try:
             print("🌀Applying migration file: ", migration_file_name)
@@ -132,23 +132,52 @@ Please fix below files and follow the following order to apply migration. """)
         else:
             pending_migrations = mg.get_pending_migrations(data)
 
-        for p_mig in pending_migrations:
+        if len(pending_migrations) > 0:
+            for p_mig in pending_migrations:
 
-            sql = mg.import_single_migration(p_mig)
+                sql = mg.import_single_migration(p_mig)
+                try:
+                    print("🌀Applying migration file: ", p_mig)
+                    db.apply_migration(sql.get('apply'), p_mig, version_no)
+                except Exception as ex:
+                    print("✅ Your database is at revision# {}".format(version_no) )
+                    custom_exit(1, "Your migration '{}' has failed. Please fix it and retry.".format(p_mig), ex)
 
-            try:
-                print("🌀Applying migration file: ", p_mig)
-                db.apply_migration(sql.get('apply'), p_mig, version_no)
-            except Exception as ex:
-                print("✅ Your database is at revision# {}".format(version_no) )
-                custom_exit(1, "Your migration '{}' has failed. Please fix it and retry.".format(p_mig), ex)
-
-        print("✅ Your database is at revision# {}".format(version_no) )
-
+            print("✅ Your database is at revision# {}".format(version_no) )
+        else:
+            print("Nothing to migrate ....")
 
 
 def rollback_db_migration(version):
-    pass
+    # check the revision number in database if nothing is found then report error
+    # get all the files for the given revision number and all new revision after that.
+    # render details on screen about all the eligible files for rollback
+    # on confirmation process rollback one by one.
+
+    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+
+    if version:
+        cols, result = db.get_migrations_at_revision(version)
+    else:
+        cols, result = db.get_latest_db_revision()
+
+    print("Following files will be rolledback: ")
+    print(tabulate(result, headers=cols))
+    confirm = input("\nPlease confirm to proceed(y/yes):")
+    if confirm.lower() in ['y', 'yes']:
+        try:
+            for roll in result:
+                sql = mg.import_single_migration(roll[1])
+                print("\n rolling back file:: ", roll[1])
+                db.rollback_migration(sql.get('rollback'), roll[0])
+        except Exception as ex:
+            custom_exit(1, "An error occurred while performing rollback.", ex)
+
+        print("✅ Rollback complete.\n")
+
+    else:
+        print("No operation performed.\n")
 
 
 def reverse_enginner_db():
@@ -159,7 +188,6 @@ def reverse_enginner_db():
         4. make an entry in version table for that migration
         5. @TODO:: get an optional argument of list of table for which the data should also be dumped.
         6. @TODO:: create logic for stored procedures, functions and triggers.
-
     """
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
 
