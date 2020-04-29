@@ -162,6 +162,9 @@ def rollback_db_migration(version):
     else:
         cols, result = db.get_latest_db_revision()
 
+    if len(result) < 1:
+        custom_exit(1, "No Files to rollback. Probably {} is the latest version.".format(version))
+
     print("Following files will be rolledback: ")
     print(tabulate(result, headers=cols))
     confirm = input("\nPlease confirm to proceed(y/yes):")
@@ -169,7 +172,7 @@ def rollback_db_migration(version):
         try:
             for roll in result:
                 sql = mg.import_single_migration(roll[1])
-                print("\n rolling back file:: ", roll[1])
+                print("\n🔄 Rolling back file:: ", roll[1])
                 db.rollback_migration(sql.get('rollback'), roll[0])
         except Exception as ex:
             custom_exit(1, "An error occurred while performing rollback.", ex)
