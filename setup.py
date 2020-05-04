@@ -21,6 +21,7 @@ setup(
                 'rokso = rokso:main'
             ]
         },
+        python_requires='>=3.3',
         classifiers =(
             "Programming Language :: Python :: 3",
             "License :: OSI Approved :: MIT License",
