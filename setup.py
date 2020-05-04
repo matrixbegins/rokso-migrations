@@ -26,7 +26,7 @@ setup(
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Dependent",
         ),
-        keywords ='MySql, database-migration',
+        keywords ='MySql, database-migration, python-database-migration',
         install_requires = requirements,
         zip_safe = False
 )
