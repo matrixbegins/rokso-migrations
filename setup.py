@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, find_namespace_packages
 
 with open('requirements.txt') as f:
     requirements = f.readlines()
@@ -15,7 +15,8 @@ setup(
         long_description = long_description,
         long_description_content_type ="text/markdown",
         license ='MIT',
-        packages = find_packages(),
+        packages=find_namespace_packages(include=['rokso', 'rokso.*', 'rokso.lib.*']),
+        scripts=['rokso/rokso.py'],
         entry_points ={
             'console_scripts': [
                 'rokso = rokso:main'
