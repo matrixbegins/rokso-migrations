@@ -23,12 +23,16 @@ setup(
             ]
         },
         python_requires='>=3.3',
-        classifiers =(
+        classifiers = [
             "Programming Language :: Python :: 3",
             "License :: OSI Approved :: MIT License",
-            "Development Status :: 4 - Beta",
+            "Development Status :: 3 - Alpha",
             "Operating System :: POSIX :: Linux",
-        ),
+            "Operating System :: MacOS",
+            "Operating System :: MacOS :: MacOS X",
+            "Topic :: Database",
+            "Programming Language :: Python :: 3.8",
+        ],
         keywords ='MySql, database-migration, python-database-migration',
         install_requires = requirements,
         zip_safe = False
