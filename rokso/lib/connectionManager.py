@@ -12,6 +12,7 @@ class ConnectionManager:
 
         except Error as e:
             print("Error while connecting to MySQL \n", e)
+            raise e
 
 
     def get_connection(self):

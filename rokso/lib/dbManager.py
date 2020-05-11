@@ -55,7 +55,7 @@ class DBManager:
         """ Creates database version table in the given database """
 
         sql = """
-            CREATE TABLE {} (
+            CREATE TABLE IF NOT EXISTS {} (
                 id INT auto_increment NOT NULL,
                 filename varchar(255) NOT NULL,
                 version varchar(100) NOT NULL,

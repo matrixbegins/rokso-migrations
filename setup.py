@@ -16,10 +16,9 @@ setup(
         long_description_content_type ="text/markdown",
         license ='MIT',
         packages=find_namespace_packages(include=['rokso', 'rokso.*', 'rokso.lib.*']),
-        scripts=['rokso/rokso.py'],
         entry_points ={
             'console_scripts': [
-                'rokso = rokso:main'
+                'rokso = rokso.rokso:main'
             ]
         },
         python_requires='>=3.3',

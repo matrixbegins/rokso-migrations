@@ -1,6 +1,6 @@
-import click, sys
+import click, sys, os
 
-from lib import agent
+from .lib import agent
 
 
 @click.group()
@@ -81,5 +81,9 @@ cli.add_command(migrate)
 cli.add_command(rollback)
 
 
+def main():
+    return cli()
+
+
 if __name__ == '__main__':
-    cli()
+    main()

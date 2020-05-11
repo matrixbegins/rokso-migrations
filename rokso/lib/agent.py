@@ -53,8 +53,11 @@ def db_status():
         devise a way for OS's directory seperator to access files without a problem.
     """
 
-    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
-    cols , data = db.get_database_state()
+    try:
+        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+        cols , data = db.get_database_state()
+    except FileNotFoundError as ex:
+        custom_exit(1, "It seems the project setup is not complete.\nPlease run `rokso init` first.", ex)
 
     # get all successful migrations
     completed_migs = list(filter(lambda el: el[3] == "complete", data))
@@ -73,12 +76,15 @@ def db_status():
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
     pending_migrations = mg.get_pending_migrations(data)
 
-    toshow = []
-    for pending in pending_migrations:
-        toshow.append((pending, 'NA', 'pending'))
+    if len(pending_migrations) > 0:
+        toshow = []
+        for pending in pending_migrations:
+            toshow.append((pending, 'NA', 'pending'))
 
-    print("\nPending migrations for application: ")
-    print(tabulate(toshow, headers=('filename', 'version', 'status')))
+        print("\nPending migrations for application: ")
+        print(tabulate(toshow, headers=('filename', 'version', 'status')))
+    else:
+        print("\nNo new migration to process.\n")
 
 
 def create_db_migration(tablename, filename):
@@ -94,8 +100,11 @@ def apply_migration(migration_file_name):
         @TODO:: check for all/none or dependencies multi-table entries
     """
     version_no = str(uuid.uuid4())[:8]
-    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
-    col, data = db.get_database_state()
+    try:
+        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+        col, data = db.get_database_state()
+    except FileNotFoundError as ex:
+        custom_exit(1, "It seems the project setup is not complete.\nPlease run `rokso init` first.", ex)
 
     # get any previous failed migrations
     failed_migs = list(filter(lambda el: el[3] == "error", data))
@@ -154,8 +163,11 @@ def rollback_db_migration(version):
     # render details on screen about all the eligible files for rollback
     # on confirmation process rollback one by one.
 
-    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
-    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+    try:
+        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+        mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+    except FileNotFoundError as ex:
+        custom_exit(1, "It seems the project setup is not complete.\nPlease run `rokso init` first.", ex)
 
     if version:
         cols, result = db.get_migrations_at_revision(version)
@@ -194,8 +206,11 @@ def reverse_enginner_db():
     """
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
 
-    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
-    cols , data = db.get_database_state()
+    try:
+        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+        cols , data = db.get_database_state()
+    except FileNotFoundError as ex:
+        custom_exit(1, "It seems the project setup is not complete.\nPlease run `rokso init` first.", ex)
 
     if len(data) > 0:
         custom_exit(1, "It seems you already have some rokso migrations in your database. Reverse engineering is possible just after the project setup.")
