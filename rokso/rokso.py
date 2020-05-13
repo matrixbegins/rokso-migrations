@@ -1,6 +1,6 @@
 import click, sys, os
 
-from .lib import agent
+from lib import agent
 
 
 @click.group()
