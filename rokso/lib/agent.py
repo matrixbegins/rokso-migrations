@@ -35,9 +35,10 @@ def init_setup(dbhost, dbname, dbusername, dbpassword, projectpath):
     try:
         CMobj = ConfigManager()
         CMobj.init(json_dict, projectpath)
+    except FileExistsError as e:
+        custom_exit(0, "", e)
     except Exception as e:
-        print(e)
-        custom_exit(1, "Issues while creating migration directory.", e)
+        custom_exit(1, "Unable to initialize rokso.", e)
 
     config = CMobj.get_config(cwd)
 
@@ -83,6 +84,7 @@ def db_status():
 
         print("\nPending migrations for application: ")
         print(tabulate(toshow, headers=('filename', 'version', 'status')))
+        print("\n")
     else:
         print("\nNo new migration to process.\n")
 
@@ -131,6 +133,7 @@ Please fix below files and follow the following order to apply migration. """)
             pass
         finally:
             print("✅ Your database is at revision# {}".format(version_no) )
+            print("\n")
 
     else:
         # checking for failed migration. If present then attempt to migrate them first and do not proceed with new migrations.
@@ -153,8 +156,9 @@ Please fix below files and follow the following order to apply migration. """)
                     custom_exit(1, "Your migration '{}' has failed. Please fix it and retry.".format(p_mig), ex)
 
             print("✅ Your database is at revision# {}".format(version_no) )
+            print("\n")
         else:
-            print("Nothing to migrate ....")
+            print("Nothing to migrate ....\n")
 
 
 def rollback_db_migration(version):
@@ -195,7 +199,7 @@ def rollback_db_migration(version):
         print("No operation performed.\n")
 
 
-def reverse_enginner_db():
+def reverse_engineer_db():
     """
         1. finds all the tables in database
         2. extract the table definition for each table from DB
@@ -220,6 +224,7 @@ def reverse_enginner_db():
         headers, data = db.select_query("show tables;")
         print("I found {} tables in the database... ".format(len(data)))
         print(tabulate(data, headers=headers))
+        print("\n")
 
         for table in data:
             print('creating migration for table: ', table[0])
@@ -231,4 +236,5 @@ def reverse_enginner_db():
                 # now insert into the migration_version table
                 db.insert_new_migration(migration_file_name, version_no, "complete" )
 
-        print("✅ Reverse enginnering of database complete. \n your database is at revision# {}".format(version_no))
+        print("✅ Reverse engineering of database complete. \n your database is at revision# {}\n".format(version_no))
+

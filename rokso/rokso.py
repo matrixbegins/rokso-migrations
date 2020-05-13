@@ -41,7 +41,7 @@ def remap():
     """ Reverse engineer your DB migrations from existing database.
      Make sure init command is complete and you have a valid config file and migrations directory setup. """
     click.echo('Starting remapping of existing database for versioning')
-    agent.reverse_enginner_db()
+    agent.reverse_engineer_db()
 
 
 @click.command('create', short_help='➕ create a database migration.')

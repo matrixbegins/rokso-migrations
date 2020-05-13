@@ -29,7 +29,7 @@ class ConfigManager():
 
         print("[*] Checking state of config file in CWD")
         if os.path.exists(CONFIG_FILE):
-            raise Exception("Config file already exists")
+            raise FileExistsError("Config file already exists")
         else:
             json_data = { "database": json_dict }
             json_object = json.dumps(json_data, indent = 4, sort_keys=True) + "\n"
