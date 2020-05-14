@@ -249,4 +249,5 @@ def last_success():
         if int(str(e).split('(')[0]) == 1146:
             custom_exit(0, "Table does not exist, kindly initate rokso", e)
         else:
-            custom_exit(1, "something went wrong", e)    
+            custom_exit(1, "something went wrong", e)
+               
