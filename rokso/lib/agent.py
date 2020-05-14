@@ -53,9 +53,9 @@ def db_status():
     1. @TODO:: if referring filenames from database entries
         devise a way for OS's directory seperator to access files without a problem.
     """
-
+    cwd = get_cwd()
     try:
-        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+        db = DBManager(ConfigManager().get_config(cwd).get("database"))
         cols , data = db.get_database_state()
     except FileNotFoundError as ex:
         custom_exit(1, "It seems the project setup is not complete.\nPlease run `rokso init` first.", ex)
@@ -74,7 +74,7 @@ def db_status():
         print(tabulate(failed_migs, headers=cols))
         custom_exit(1)
 
-    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+    mg = MigrationManager(cwd + os.path.sep + 'migration')
     pending_migrations = mg.get_pending_migrations(data)
 
     if len(pending_migrations) > 0:
@@ -102,8 +102,9 @@ def apply_migration(migration_file_name):
         @TODO:: check for all/none or dependencies multi-table entries
     """
     version_no = str(uuid.uuid4())[:8]
+    cwd = get_cwd()
     try:
-        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+        db = DBManager(ConfigManager().get_config(cwd).get("database"))
         col, data = db.get_database_state()
     except FileNotFoundError as ex:
         custom_exit(1, "It seems the project setup is not complete.\nPlease run `rokso init` first.", ex)
@@ -113,7 +114,7 @@ def apply_migration(migration_file_name):
 
     failed_files = [f[1] for f in failed_migs]
 
-    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+    mg = MigrationManager(cwd + os.path.sep + 'migration')
     if migration_file_name:
         # if migration file is not in among the previously failed migrations then do not proceed.
         if len(failed_migs) > 0 and migration_file_name != failed_files[0]:
@@ -166,17 +167,19 @@ def rollback_db_migration(version):
     # get all the files for the given revision number and all new revision after that.
     # render details on screen about all the eligible files for rollback
     # on confirmation process rollback one by one.
-
+    cwd = get_cwd()
     try:
-        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
-        mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+        db = DBManager(ConfigManager().get_config(cwd).get("database"))
+        mg = MigrationManager(cwd + os.path.sep + 'migration')
     except FileNotFoundError as ex:
         custom_exit(1, "It seems the project setup is not complete.\nPlease run `rokso init` first.", ex)
 
     if version:
-        cols, result = db.get_migrations_at_revision(version)
+        cols, result = db.get_migrations_more_than_revision(version)
     else:
         cols, result = db.get_latest_db_revision()
+        # getting all the files on the latest revision number
+        cols, result = db.get_migrations_at_revision(result[0][2] )
 
     if len(result) < 1:
         custom_exit(1, "No Files to rollback. Probably {} is the latest version.".format(version))
@@ -208,10 +211,11 @@ def reverse_engineer_db():
         5. @TODO:: get an optional argument of list of table for which the data should also be dumped.
         6. @TODO:: create logic for stored procedures, functions and triggers.
     """
-    mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
+    cwd = get_cwd
+    mg = MigrationManager(cwd + os.path.sep + 'migration')
 
     try:
-        db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+        db = DBManager(ConfigManager().get_config(cwd).get("database"))
         cols , data = db.get_database_state()
     except FileNotFoundError as ex:
         custom_exit(1, "It seems the project setup is not complete.\nPlease run `rokso init` first.", ex)
@@ -239,7 +243,7 @@ def reverse_engineer_db():
         print("✅ Reverse engineering of database complete. \n your database is at revision# {}\n".format(version_no))
 
 def last_success():
-    
+
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
     cols , data = db.get_database_state()
 
