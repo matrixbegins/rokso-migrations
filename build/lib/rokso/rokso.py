@@ -1,6 +1,6 @@
 import click, sys, os
 
-from lib import agent
+from .lib import agent
 
 
 @click.group()
@@ -41,7 +41,7 @@ def remap():
     """ Reverse engineer your DB migrations from existing database.
      Make sure init command is complete and you have a valid config file and migrations directory setup. """
     click.echo('Starting remapping of existing database for versioning')
-    agent.reverse_engineer_db()
+    agent.reverse_enginner_db()
 
 
 @click.command('create', short_help='➕ create a database migration.')
@@ -72,10 +72,6 @@ def rollback(version):
         By specifing --version option you can rollback to a previous DB state. """
     agent.rollback_db_migration(version)
 
-@click.command('last-success', short_help='⤵️  last successful migration version number')
-
-def last_success():
-    agent.last_success()
 
 cli.add_command(init)
 cli.add_command(status)
@@ -83,7 +79,6 @@ cli.add_command(remap)
 cli.add_command(create)
 cli.add_command(migrate)
 cli.add_command(rollback)
-cli.add_command(last_success)
 
 
 def main():
