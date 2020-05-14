@@ -238,3 +238,9 @@ def reverse_engineer_db():
 
         print("✅ Reverse engineering of database complete. \n your database is at revision# {}\n".format(version_no))
 
+def last_success():
+    
+    db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
+    cols , data = db.get_database_state()
+
+    print(data[len(data) - 1][2])
