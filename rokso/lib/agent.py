@@ -241,6 +241,12 @@ def reverse_engineer_db():
 def last_success():
     
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
-    cols , data = db.get_database_state()
+    try:
+        cols , data = db.get_latest_db_revision()
+    except Exception as e:
+        custom_exit(0, "seems rokso is not yet initiated on db, kindly ignore", e)       
 
-    print(data[len(data) - 1][2])
+#    if data[0][2]:
+#        print(data[0][2])
+#    else:
+#        custom_exit(0, "seem rokso is not yet initiated on db")    
