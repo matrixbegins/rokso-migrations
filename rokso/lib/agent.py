@@ -243,8 +243,9 @@ def last_success():
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
     try:
         cols , data = db.get_latest_db_revision()
+        print(data[0][2])
     except Exception as e:
-        #print(e.__class__.__name__)  
+        #print(e.__class__.__name__) 
         if int(str(e).split('(')[0]) == 1146:
             custom_exit(0, "Table does not exist, kindly initate rokso", e)
         else:
