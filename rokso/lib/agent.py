@@ -244,9 +244,8 @@ def last_success():
     try:
         cols , data = db.get_latest_db_revision()
     except Exception as e:
-        custom_exit(0, "seems rokso is not yet initiated on db, kindly ignore", e)       
-
-#    if data[0][2]:
-#        print(data[0][2])
-#    else:
-#        custom_exit(0, "seem rokso is not yet initiated on db")    
+        #print(e.__class__.__name__)  
+        if int(str(e).split('(')[0]) == 1146:
+            custom_exit(0, "Table does not exist, kindly initate rokso", e)
+        else:
+            custom_exit(1, "something went wrong", e)    
