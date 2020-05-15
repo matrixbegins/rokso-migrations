@@ -72,7 +72,7 @@ def db_status():
     if len(failed_migs) > 0:
         print("\n[❗] However we have detected few failed migrations in the past. \n Please fix them first.\n")
         print(tabulate(failed_migs, headers=cols))
-        custom_exit(1)
+        custom_exit(0)
 
     mg = MigrationManager(get_cwd() + os.path.sep + 'migration')
     pending_migrations = mg.get_pending_migrations(data)
