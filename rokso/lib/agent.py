@@ -243,7 +243,11 @@ def last_success():
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
     try:
         cols , data = db.get_latest_db_revision()
-        print(data[0][2])
+        if len(data) > 0:
+            print(data[0][2])
+        else:
+            print("No last revion detected")
+            exit(0)
     except Exception as e:
         #print(e.__class__.__name__) 
         if int(str(e).split('(')[0]) == 1146:
