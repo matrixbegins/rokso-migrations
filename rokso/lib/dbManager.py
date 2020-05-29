@@ -119,5 +119,9 @@ class DBManager:
 
 
     def get_migrations_at_revision(self, version):
+        sql = """ SELECT * FROM {} WHERE version = '{}' ORDER  BY id desc"""
+        return self.select_query(sql.format(self.revision_table, version))
+
+    def get_migrations_more_than_revision(self, version):
         sql = """ SELECT * FROM {} WHERE scheduledAt > (SELECT scheduledAt FROM {} WHERE version = '{}' ORDER  BY id desc LIMIT 1) ORDER BY id DESC; """
         return self.select_query(sql.format(self.revision_table,self.revision_table, version))
