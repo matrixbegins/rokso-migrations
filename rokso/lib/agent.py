@@ -211,7 +211,7 @@ def reverse_engineer_db():
         5. @TODO:: get an optional argument of list of table for which the data should also be dumped.
         6. @TODO:: create logic for stored procedures, functions and triggers.
     """
-    cwd = get_cwd
+    cwd = get_cwd()
     mg = MigrationManager(cwd + os.path.sep + 'migration')
 
     try:
