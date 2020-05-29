@@ -72,7 +72,7 @@ def db_status():
     if len(failed_migs) > 0:
         print("\n[❗] However we have detected few failed migrations in the past. \n Please fix them first.\n")
         print(tabulate(failed_migs, headers=cols))
-        custom_exit(1)
+        custom_exit(0)
 
     mg = MigrationManager(cwd + os.path.sep + 'migration')
     pending_migrations = mg.get_pending_migrations(data)
@@ -211,7 +211,7 @@ def reverse_engineer_db():
         5. @TODO:: get an optional argument of list of table for which the data should also be dumped.
         6. @TODO:: create logic for stored procedures, functions and triggers.
     """
-    cwd = get_cwd
+    cwd = get_cwd()
     mg = MigrationManager(cwd + os.path.sep + 'migration')
 
     try:
@@ -245,6 +245,17 @@ def reverse_engineer_db():
 def last_success():
 
     db = DBManager(ConfigManager().get_config(get_cwd()).get("database"))
-    cols , data = db.get_database_state()
-
-    print(data[len(data) - 1][2])
+    try:
+        cols , data = db.get_latest_db_revision()
+        if len(data) > 0:
+            print(data[0][2])
+        else:
+            print("No last revion detected")
+            exit(0)
+    except Exception as e:
+        #print(e.__class__.__name__) 
+        if int(str(e).split('(')[0]) == 1146:
+            custom_exit(0, "Table does not exist, kindly initate rokso", e)
+        else:
+            custom_exit(1, "something went wrong", e)
+               
