@@ -78,14 +78,16 @@ The above command does following things:
 - Creates a version control table `rokso_db_version` in the database.
 
 Check all contents now
-
+```
 ➜  mydbproject git:(master) ✗ ll
 total 8
 -rw-r--r--  1 user  staff   157B Sep 13 04:26 config.json
 drwxr-xr-x  2 user  staff    64B Sep 13 04:26 migration
 
 ```
+
 Check the table in database
+
 ```
 mysql> desc rokso_db_version;
 +-------------+--------------+------+-----+-------------------+-------------------+
