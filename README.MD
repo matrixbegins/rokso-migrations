@@ -121,7 +121,7 @@ Now you can see a new file under migration directory has been generated:
 ```
 ➜  mydbproject git:(master) ✗ ll migration
 total 0
-drwxr-xr-x  3 user  staff    96B Sep 13 04:41 website_category
+drwxr-xr-x  3 user  staff    96B Sep 13 04:41 website_customers
 
 ➜  mydbproject git:(master) ✗ ll migration/website_customers
 total 8
