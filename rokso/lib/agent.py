@@ -253,9 +253,9 @@ def last_success():
             print("No last revion detected")
             exit(0)
     except Exception as e:
-        #print(e.__class__.__name__) 
+        #print(e.__class__.__name__)
         if int(str(e).split('(')[0]) == 1146:
             custom_exit(0, "Table does not exist, kindly initate rokso", e)
         else:
             custom_exit(1, "something went wrong", e)
-               
+
