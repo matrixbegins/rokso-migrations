@@ -1,4 +1,5 @@
 import click, sys, os
+sys.path.append(os.path.abspath(os.getcwd()))
 
 from lib import agent
 
@@ -65,7 +66,7 @@ def migrate(migration):
 
 
 @click.command('rollback', short_help='⤵️  Rollback last applied migration')
-@click.option('--version', prompt='Please enter a version number to rollback to (Any previous stable version).\nIf you are not sure then run `rokso status` first to know about version',
+@click.option('--version',
                 help="Rollbacks database state to specified version.\nThese version numbers can be obtained either from database or by running `rokso status`")
 def rollback(version):
     """ Rollback last applied out migration
