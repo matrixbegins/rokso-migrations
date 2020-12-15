@@ -12,4 +12,4 @@ mysql-connector-python = "*"
 tabulate = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "python 3"

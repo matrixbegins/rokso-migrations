@@ -1,4 +1,5 @@
 import click, sys, os
+sys.path.append(os.path.abspath(os.getcwd()))
 
 from lib import agent
 
