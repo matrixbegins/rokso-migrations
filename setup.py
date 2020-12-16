@@ -7,7 +7,7 @@ long_description = 'Rokso migration package for mysql database migrations'
 
 setup(
         name ='rokso',
-        version ='0.1.14',
+        version ='0.1.15',
         author ='Ankur Pandey',
         author_email ='matrixbegins@gmail.com',
         url ='https://github.com/matrixbegins/rokso-migrations',
