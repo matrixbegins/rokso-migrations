@@ -1,7 +1,11 @@
-import click, sys, os
-sys.path.append(os.path.abspath(os.getcwd()))
+import click, sys, os, pathlib
+# sys.path.append(pathlib.Path(__file__).parent.absolute())
 
-from lib import agent
+
+try:
+    from .lib import agent
+except ImportError:
+    from lib import agent
 
 
 @click.group()
